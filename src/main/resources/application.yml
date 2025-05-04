@@ -12,13 +12,25 @@ spring:
     ssl:
       enabled: true
   datasource:
-    url: jdbc:postgresql://localhost:25432/postgres
-    username: postgres
-    password: postgres
+    url: jdbc:postgresql://notifypoint_db:5432/notifypoint_db
+    username: notifypoint_user
+    password: notifypoint_password
     driverClassName: org.postgresql.Driver
   flyway:
     enabled: true
     validate-on-migrate: true
+
+management:
+  endpoint:
+    health:
+      access: unrestricted
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+  server:
+    port: 8082
 
 kafka:
   consumers-enabled: true
@@ -29,7 +41,7 @@ kafka:
   clusters:
     default:
       bootstrap-servers:
-        - localhost:29092
+        - kafka:9092
       properties:
         acks: -1
         delivery.timeout.ms: 90000

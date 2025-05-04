@@ -1,5 +1,6 @@
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.io.ClassPathResource
 import ru.tanpii.notifypoint.domain.service.notifications.Event
 import ru.tanpii.notifypoint.domain.service.notifications.handler.NotificationCreator
 import ru.tanpii.notifypoint.domain.service.templates.TemplatesService
@@ -10,7 +11,7 @@ import java.io.File
 
 private val logger = KotlinLogging.logger { }
 
-private const val IMAGE_PATH = "src/main/resources/static/logo.png"
+private const val IMAGE_PATH = "static/logo.png"
 private const val IMAGE_NAME = "logo"
 
 abstract class AbstractNotificationPayloadCreator<T : Event>(
@@ -18,6 +19,20 @@ abstract class AbstractNotificationPayloadCreator<T : Event>(
     @Value("\${spring.mail.username}")
     private val sender: String
 ) : NotificationCreator<T> {
+
+    private lateinit var tempFile: File
+
+    init {
+        val imageResource = ClassPathResource(IMAGE_PATH)
+        tempFile = File.createTempFile(IMAGE_NAME, ".png").apply {
+            deleteOnExit()
+        }
+        imageResource.inputStream.use { input ->
+            tempFile.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+    }
 
     override fun parseEvent(payload: String): T {
         return JsonUtils.fromJson(payload, eventClass)
@@ -33,7 +48,7 @@ abstract class AbstractNotificationPayloadCreator<T : Event>(
             to(event.email)
             subject(template.subject)
             html(replaceData(template.htmlTemplate, event))
-            image(IMAGE_NAME, File(IMAGE_PATH))
+            image(IMAGE_NAME, tempFile)
         }
 
         logger.info {
