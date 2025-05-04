@@ -7,8 +7,6 @@ spring:
   mail:
     host: smtp.yandex.ru
     port: 465
-    username: "porseva.tatiana@yandex.ru"
-    password: "obgdvkuhnvafsbfi"
     ssl:
       enabled: true
   datasource:
